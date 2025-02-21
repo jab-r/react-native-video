@@ -1,9 +1,10 @@
 #import <React/RCTViewManager.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
+#import <React/RCTFabricComponentsPlugins.h>
 #import "VideoModule.h"
 
-@interface RCT_EXTERN_MODULE(RCTVideoManager, RCTViewManager)
+@interface RCT_EXTERN_REMAP_MODULE(RCTVideo, RCTVideoManager, RCTViewManager)
 
 // Methods
 RCT_EXTERN_METHOD(seekTo:(nonnull NSNumber *)reactTag time:(nonnull NSNumber *)time)

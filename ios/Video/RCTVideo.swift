@@ -20,6 +20,9 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     private var _videoURL: NSURL?
 
     /* Required to publish events */
+    #if RCT_NEW_ARCH_ENABLED
+    weak var bridge: RCTBridge?
+    #endif
     private var _eventDispatcher: RCTEventDispatcher?
     private var _videoLoadStarted = false
 

@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.platform     = :ios, "13.0"
   s.source       = { :git => "https://github.com/jab-r/loxation.git", :tag => "#{s.version}" }
 
-  s.source_files = "ios/Video/**/*.{h,m,mm,swift}"
+  s.source_files = "ios/**/*.{h,m,mm,swift}"
   s.header_dir = "VideoModule"
   s.pod_target_xcconfig = {
     'DEFINES_MODULE' => 'YES',

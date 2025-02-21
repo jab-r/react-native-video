@@ -1,5 +1,6 @@
 import AVFoundation
 import React
+import React_Fabric
 
 @objc(RCTVideoManager)
 class RCTVideoManager: RCTViewManager {
@@ -10,55 +11,85 @@ class RCTVideoManager: RCTViewManager {
     override class func requiresMainQueueSetup() -> Bool {
         return true
     }
-
-    override class func propConfig() -> [String: Any] {
-        return [
-            "src": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "NSDictionary"],
-            "paused": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "BOOL"],
-            "muted": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "BOOL"],
-            "controls": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "BOOL"],
-            "volume": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "float"],
-            "playInBackground": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "BOOL"],
-            "resizeMode": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "NSString"],
-            "repeat": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "BOOL"],
-            "rate": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "float"],
-            
-            // Events
-            "onLoad": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
-            "onLoadStart": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
-            "onBuffer": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
-            "onError": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
-            "onProgress": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
-            "onSeek": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
-            "onEnd": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
-            "onReadyForDisplay": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
-            "onPlaybackRateChange": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
-            "onFullscreenPlayerWillPresent": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
-            "onFullscreenPlayerDidPresent": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
-            "onFullscreenPlayerWillDismiss": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
-            "onFullscreenPlayerDidDismiss": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"]
-        ]
-    }
-
+    
     override func view() -> UIView! {
+        #if RCT_NEW_ARCH_ENABLED
+        let componentView = RCTVideo(frame: .zero)
+        componentView.bridge = bridge
+        return componentView
+        #else
         guard let eventDispatcher = bridge?.eventDispatcher else {
             RCTLogError("Failed to get event dispatcher")
             return nil
         }
         return RCTVideo(eventDispatcher: eventDispatcher)
+        #endif
     }
 
-    override func constantsToExport() -> [AnyHashable : Any]! {
+    override static func propConfig() -> [String: Any]! {
         return [
-            "ScaleNone": AVLayerVideoGravity.resizeAspect.rawValue,
-            "ScaleToFill": AVLayerVideoGravity.resize.rawValue,
-            "ScaleAspectFit": AVLayerVideoGravity.resizeAspect.rawValue,
-            "ScaleAspectFill": AVLayerVideoGravity.resizeAspectFill.rawValue
+            "src": [
+                "type": "Map",
+            ],
+            "resizeMode": [
+                "type": "String",
+                "default": "contain"
+            ],
+            "repeat": [
+                "type": "Boolean",
+                "default": false
+            ],
+            "paused": [
+                "type": "Boolean",
+                "default": false
+            ],
+            "muted": [
+                "type": "Boolean",
+                "default": false
+            ],
+            "controls": [
+                "type": "Boolean",
+                "default": false
+            ],
+            "volume": [
+                "type": "Float",
+                "default": 1.0
+            ],
+            "rate": [
+                "type": "Float",
+                "default": 1.0
+            ],
+            
+            // Events
+            "onVideoLoad": [
+                "type": "DirectEventHandler",
+                "registrationName": "onVideoLoad"
+            ],
+            "onVideoError": [
+                "type": "DirectEventHandler",
+                "registrationName": "onVideoError"
+            ],
+            "onVideoProgress": [
+                "type": "DirectEventHandler",
+                "registrationName": "onVideoProgress"
+            ],
+            "onVideoSeek": [
+                "type": "DirectEventHandler",
+                "registrationName": "onVideoSeek"
+            ],
+            "onVideoEnd": [
+                "type": "DirectEventHandler",
+                "registrationName": "onVideoEnd"
+            ],
+            "onVideoBuffer": [
+                "type": "DirectEventHandler",
+                "registrationName": "onVideoBuffer"
+            ],
+            "onPlaybackRateChange": [
+                "type": "DirectEventHandler",
+                "registrationName": "onPlaybackRateChange"
+            ]
         ]
-    }
-
-    func methodQueue() -> DispatchQueue {
-        return DispatchQueue.main
     }
 
     @objc(seekTo:time:)
@@ -75,42 +106,16 @@ class RCTVideoManager: RCTViewManager {
         }
     }
 
-    @objc(setMuted:muted:)
-    func setMuted(_ reactTag: NSNumber, muted: Bool) {
-        performOnVideoView(withReactTag: reactTag) { videoView in
-            videoView?.setMuted(muted)
-        }
-    }
-
-    @objc(setVolume:volume:)
-    func setVolume(_ reactTag: NSNumber, volume: Float) {
-        performOnVideoView(withReactTag: reactTag) { videoView in
-            videoView?.setVolume(volume)
-        }
-    }
-
     private func performOnVideoView(withReactTag reactTag: NSNumber, callback: @escaping (RCTVideo?) -> Void) {
         #if RCT_NEW_ARCH_ENABLED
-        // For Fabric
-        self.bridge?.uiManager.addUIBlock { (_, viewRegistry) in
-            let view = viewRegistry?[reactTag]
-            guard let videoView = view as? RCTVideo else {
-                RCTLogError("Invalid view returned from registry, expecting RCTVideo, got: \(String(describing: view))")
-                callback(nil)
-                return
-            }
-            callback(videoView)
+        bridge?.uiManager.synchronouslyUpdateViewOnUIThread(reactTag, viewName: "RCTVideo", props: nil)
+        if let view = bridge?.uiManager.view(forReactTag: reactTag) as? RCTVideo {
+            callback(view)
         }
         #else
-        // For old bridge mode
-        self.bridge?.uiManager.addUIBlock { (_, viewRegistry) in
-            let view = viewRegistry?[reactTag]
-            guard let videoView = view as? RCTVideo else {
-                RCTLogError("Invalid view returned from registry, expecting RCTVideo, got: \(String(describing: view))")
-                callback(nil)
-                return
-            }
-            callback(videoView)
+        bridge?.uiManager.addUIBlock { (_, viewRegistry) in
+            guard let view = viewRegistry?[reactTag] as? RCTVideo else { return }
+            callback(view)
         }
         #endif
     }
