@@ -3,8 +3,103 @@ import React
 
 @objc(RCTVideoManager)
 class RCTVideoManager: RCTViewManager {
+    override static func moduleName() -> String! {
+        return "RCTVideo"
+    }
+
+    override static func requiresMainQueueSetup() -> Bool {
+        return true
+    }
+
+    // Define event configurations
+    override func constantsToExport() -> [AnyHashable : Any]! {
+        return [
+            "directEventTypes": [
+                "onVideoLoadStart": [
+                    "registrationName": "onVideoLoadStart"
+                ],
+                "onVideoLoad": [
+                    "registrationName": "onVideoLoad"
+                ],
+                "onVideoBuffer": [
+                    "registrationName": "onVideoBuffer"
+                ],
+                "onVideoError": [
+                    "registrationName": "onVideoError"
+                ],
+                "onVideoProgress": [
+                    "registrationName": "onVideoProgress"
+                ],
+                "onVideoBandwidthUpdate": [
+                    "registrationName": "onVideoBandwidthUpdate"
+                ],
+                "onVideoSeek": [
+                    "registrationName": "onVideoSeek"
+                ],
+                "onVideoEnd": [
+                    "registrationName": "onVideoEnd"
+                ],
+                "onTimedMetadata": [
+                    "registrationName": "onTimedMetadata"
+                ],
+                "onVideoAudioBecomingNoisy": [
+                    "registrationName": "onVideoAudioBecomingNoisy"
+                ],
+                "onVideoFullscreenPlayerWillPresent": [
+                    "registrationName": "onVideoFullscreenPlayerWillPresent"
+                ],
+                "onVideoFullscreenPlayerDidPresent": [
+                    "registrationName": "onVideoFullscreenPlayerDidPresent"
+                ],
+                "onVideoFullscreenPlayerWillDismiss": [
+                    "registrationName": "onVideoFullscreenPlayerWillDismiss"
+                ],
+                "onVideoFullscreenPlayerDidDismiss": [
+                    "registrationName": "onVideoFullscreenPlayerDidDismiss"
+                ],
+                "onReadyForDisplay": [
+                    "registrationName": "onReadyForDisplay"
+                ],
+                "onPlaybackRateChange": [
+                    "registrationName": "onPlaybackRateChange"
+                ],
+                "onVolumeChange": [
+                    "registrationName": "onVolumeChange"
+                ],
+                "onVideoPlaybackStateChanged": [
+                    "registrationName": "onVideoPlaybackStateChanged"
+                ],
+                "onVideoExternalPlaybackChange": [
+                    "registrationName": "onVideoExternalPlaybackChange"
+                ],
+                "onGetLicense": [
+                    "registrationName": "onGetLicense"
+                ],
+                "onPictureInPictureStatusChanged": [
+                    "registrationName": "onPictureInPictureStatusChanged"
+                ],
+                "onRestoreUserInterfaceForPictureInPictureStop": [
+                    "registrationName": "onRestoreUserInterfaceForPictureInPictureStop"
+                ],
+                "onReceiveAdEvent": [
+                    "registrationName": "onReceiveAdEvent"
+                ],
+                "onVideoAspectRatio": [
+                    "registrationName": "onVideoAspectRatio"
+                ],
+                "onControlsVisibilityChange": [
+                    "registrationName": "onControlsVisibilityChange"
+                ]
+            ],
+            "bubblingEventTypes": [:]
+        ]
+    }
+
     override func view() -> UIView {
-        return RCTVideo(eventDispatcher: (RCTBridge.current().eventDispatcher() as! RCTEventDispatcher))
+        guard let eventDispatcher = bridge?.eventDispatcher() else {
+            fatalError("RCTVideoManager requires a bridge with an event dispatcher")
+        }
+        return RCTVideo(eventDispatcher: eventDispatcher)
     }
 
     func methodQueue() -> DispatchQueue {
@@ -105,9 +200,5 @@ class RCTVideoManager: RCTViewManager {
         performOnVideoView(withReactTag: reactTag, callback: { videoView in
             videoView?.getCurrentPlaybackTime(resolve, reject)
         })
-    }
-
-    override class func requiresMainQueueSetup() -> Bool {
-        return true
     }
 }

@@ -1,0 +1,6 @@
+framework module VideoModule {
+    umbrella header "VideoModule.h"
+    
+    export *
+    module * { export * }
+}
