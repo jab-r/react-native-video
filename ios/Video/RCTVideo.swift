@@ -195,8 +195,8 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     }
 
     init(eventDispatcher: RCTEventDispatcher!) {
+        _eventDispatcher = eventDispatcher
         super.init(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
-        ReactNativeVideoManager.shared.registerView(newInstance: self)
         #if USE_GOOGLE_IMA
             _imaAdsManager = RCTIMAAdsManager(video: self, isPictureInPictureActive: isPictureInPictureActive)
         #endif

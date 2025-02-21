@@ -43,9 +43,9 @@ using namespace facebook::react;
     const auto &newVideoProps = *std::static_pointer_cast<const VideoProps>(props);
 
     // Handle prop updates here
-    if (oldVideoProps.source != newVideoProps.source) {
+    if (oldVideoProps.src != newVideoProps.src) {
         // Update source
-        [_videoView setSrc:newVideoProps.source];
+        [_videoView setSrc:newVideoProps.src];
     }
 
     // Update other props as needed

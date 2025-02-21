@@ -3,202 +3,115 @@ import React
 
 @objc(RCTVideoManager)
 class RCTVideoManager: RCTViewManager {
-    override static func moduleName() -> String! {
+    override class func moduleName() -> String! {
         return "RCTVideo"
     }
 
-    override static func requiresMainQueueSetup() -> Bool {
+    override class func requiresMainQueueSetup() -> Bool {
         return true
     }
 
-    // Define event configurations
-    override func constantsToExport() -> [AnyHashable : Any]! {
+    override class func propConfig() -> [String: Any] {
         return [
-            "directEventTypes": [
-                "onVideoLoadStart": [
-                    "registrationName": "onVideoLoadStart"
-                ],
-                "onVideoLoad": [
-                    "registrationName": "onVideoLoad"
-                ],
-                "onVideoBuffer": [
-                    "registrationName": "onVideoBuffer"
-                ],
-                "onVideoError": [
-                    "registrationName": "onVideoError"
-                ],
-                "onVideoProgress": [
-                    "registrationName": "onVideoProgress"
-                ],
-                "onVideoBandwidthUpdate": [
-                    "registrationName": "onVideoBandwidthUpdate"
-                ],
-                "onVideoSeek": [
-                    "registrationName": "onVideoSeek"
-                ],
-                "onVideoEnd": [
-                    "registrationName": "onVideoEnd"
-                ],
-                "onTimedMetadata": [
-                    "registrationName": "onTimedMetadata"
-                ],
-                "onVideoAudioBecomingNoisy": [
-                    "registrationName": "onVideoAudioBecomingNoisy"
-                ],
-                "onVideoFullscreenPlayerWillPresent": [
-                    "registrationName": "onVideoFullscreenPlayerWillPresent"
-                ],
-                "onVideoFullscreenPlayerDidPresent": [
-                    "registrationName": "onVideoFullscreenPlayerDidPresent"
-                ],
-                "onVideoFullscreenPlayerWillDismiss": [
-                    "registrationName": "onVideoFullscreenPlayerWillDismiss"
-                ],
-                "onVideoFullscreenPlayerDidDismiss": [
-                    "registrationName": "onVideoFullscreenPlayerDidDismiss"
-                ],
-                "onReadyForDisplay": [
-                    "registrationName": "onReadyForDisplay"
-                ],
-                "onPlaybackRateChange": [
-                    "registrationName": "onPlaybackRateChange"
-                ],
-                "onVolumeChange": [
-                    "registrationName": "onVolumeChange"
-                ],
-                "onVideoPlaybackStateChanged": [
-                    "registrationName": "onVideoPlaybackStateChanged"
-                ],
-                "onVideoExternalPlaybackChange": [
-                    "registrationName": "onVideoExternalPlaybackChange"
-                ],
-                "onGetLicense": [
-                    "registrationName": "onGetLicense"
-                ],
-                "onPictureInPictureStatusChanged": [
-                    "registrationName": "onPictureInPictureStatusChanged"
-                ],
-                "onRestoreUserInterfaceForPictureInPictureStop": [
-                    "registrationName": "onRestoreUserInterfaceForPictureInPictureStop"
-                ],
-                "onReceiveAdEvent": [
-                    "registrationName": "onReceiveAdEvent"
-                ],
-                "onVideoAspectRatio": [
-                    "registrationName": "onVideoAspectRatio"
-                ],
-                "onControlsVisibilityChange": [
-                    "registrationName": "onControlsVisibilityChange"
-                ]
-            ],
-            "bubblingEventTypes": [:]
+            "src": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "NSDictionary"],
+            "paused": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "BOOL"],
+            "muted": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "BOOL"],
+            "controls": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "BOOL"],
+            "volume": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "float"],
+            "playInBackground": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "BOOL"],
+            "resizeMode": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "NSString"],
+            "repeat": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "BOOL"],
+            "rate": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "float"],
+            
+            // Events
+            "onLoad": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
+            "onLoadStart": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
+            "onBuffer": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
+            "onError": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
+            "onProgress": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
+            "onSeek": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
+            "onEnd": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
+            "onReadyForDisplay": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
+            "onPlaybackRateChange": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
+            "onFullscreenPlayerWillPresent": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
+            "onFullscreenPlayerDidPresent": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
+            "onFullscreenPlayerWillDismiss": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"],
+            "onFullscreenPlayerDidDismiss": [NSNumber(value: RCTViewManager.RCT_EXPORT_VIEW_PROPERTY), "RCTDirectEventBlock"]
         ]
     }
 
-    override func view() -> UIView {
-        guard let eventDispatcher = bridge?.eventDispatcher() else {
-            fatalError("RCTVideoManager requires a bridge with an event dispatcher")
+    override func view() -> UIView! {
+        guard let eventDispatcher = bridge?.eventDispatcher else {
+            RCTLogError("Failed to get event dispatcher")
+            return nil
         }
         return RCTVideo(eventDispatcher: eventDispatcher)
     }
 
-    func methodQueue() -> DispatchQueue {
-        return bridge.uiManager.methodQueue
+    override func constantsToExport() -> [AnyHashable : Any]! {
+        return [
+            "ScaleNone": AVLayerVideoGravity.resizeAspect.rawValue,
+            "ScaleToFill": AVLayerVideoGravity.resize.rawValue,
+            "ScaleAspectFit": AVLayerVideoGravity.resizeAspect.rawValue,
+            "ScaleAspectFill": AVLayerVideoGravity.resizeAspectFill.rawValue
+        ]
     }
 
-    func performOnVideoView(withReactTag reactTag: NSNumber, callback: @escaping (RCTVideo?) -> Void) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self else {
-                callback(nil)
-                return
-            }
+    func methodQueue() -> DispatchQueue {
+        return DispatchQueue.main
+    }
 
-            let view = self.bridge.uiManager.view(forReactTag: reactTag)
-
-            guard let videoView = view as? RCTVideo else {
-                DebugLog("Invalid view returned from registry, expecting RCTVideo, got: \(String(describing: self.view))")
-                callback(nil)
-                return
-            }
-
-            callback(videoView)
+    @objc(seekTo:time:)
+    func seek(to reactTag: NSNumber, time: NSNumber) {
+        performOnVideoView(withReactTag: reactTag) { videoView in
+            videoView?.setSeek(time, NSNumber(value: 100))
         }
     }
 
-    @objc(seekCmd:time:tolerance:)
-    func seekCmd(_ reactTag: NSNumber, time: NSNumber, tolerance: NSNumber) {
-        performOnVideoView(withReactTag: reactTag, callback: { videoView in
-            videoView?.setSeek(time, tolerance)
-        })
-    }
-
-    @objc(setLicenseResultCmd:license:licenseUrl:)
-    func setLicenseResultCmd(_ reactTag: NSNumber, license: NSString, licenseUrl: NSString) {
-        performOnVideoView(withReactTag: reactTag, callback: { videoView in
-            videoView?.setLicenseResult(license as String, licenseUrl as String)
-        })
-    }
-
-    @objc(setLicenseResultErrorCmd:error:licenseUrl:)
-    func setLicenseResultErrorCmd(_ reactTag: NSNumber, error: NSString, licenseUrl: NSString) {
-        performOnVideoView(withReactTag: reactTag, callback: { videoView in
-            videoView?.setLicenseResultError(error as String, licenseUrl as String)
-        })
-    }
-
-    @objc(setPlayerPauseStateCmd:paused:)
-    func setPlayerPauseStateCmd(_ reactTag: NSNumber, paused: Bool) {
-        performOnVideoView(withReactTag: reactTag, callback: { videoView in
+    @objc(setPaused:paused:)
+    func setPaused(_ reactTag: NSNumber, paused: Bool) {
+        performOnVideoView(withReactTag: reactTag) { videoView in
             videoView?.setPaused(paused)
-        })
+        }
     }
 
-    @objc(setVolumeCmd:volume:)
-    func setVolumeCmd(_ reactTag: NSNumber, volume: Float) {
-        performOnVideoView(withReactTag: reactTag, callback: { videoView in
+    @objc(setMuted:muted:)
+    func setMuted(_ reactTag: NSNumber, muted: Bool) {
+        performOnVideoView(withReactTag: reactTag) { videoView in
+            videoView?.setMuted(muted)
+        }
+    }
+
+    @objc(setVolume:volume:)
+    func setVolume(_ reactTag: NSNumber, volume: Float) {
+        performOnVideoView(withReactTag: reactTag) { videoView in
             videoView?.setVolume(volume)
-        })
+        }
     }
 
-    @objc(setFullScreenCmd:fullscreen:)
-    func setFullScreenCmd(_ reactTag: NSNumber, fullScreen: Bool) {
-        performOnVideoView(withReactTag: reactTag, callback: { videoView in
-            videoView?.setFullscreen(fullScreen)
-        })
-    }
-
-    @objc(enterPictureInPictureCmd:)
-    func enterPictureInPictureCmd(_ reactTag: NSNumber) {
-        performOnVideoView(withReactTag: reactTag, callback: { videoView in
-            videoView?.enterPictureInPicture()
-        })
-    }
-
-    @objc(exitPictureInPictureCmd:)
-    func exitPictureInPictureCmd(_ reactTag: NSNumber) {
-        performOnVideoView(withReactTag: reactTag, callback: { videoView in
-            videoView?.exitPictureInPicture()
-        })
-    }
-
-    @objc(setSourceCmd:source:)
-    func setSourceCmd(_ reactTag: NSNumber, source: NSDictionary) {
-        performOnVideoView(withReactTag: reactTag, callback: { videoView in
-            videoView?.setSrc(source)
-        })
-    }
-
-    @objc(save:options:resolve:reject:)
-    func save(_ reactTag: NSNumber, options: NSDictionary, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
-        performOnVideoView(withReactTag: reactTag, callback: { videoView in
-            videoView?.save(options, resolve, reject)
-        })
-    }
-
-    @objc(getCurrentPosition:resolve:reject:)
-    func getCurrentPosition(_ reactTag: NSNumber, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
-        performOnVideoView(withReactTag: reactTag, callback: { videoView in
-            videoView?.getCurrentPlaybackTime(resolve, reject)
-        })
+    private func performOnVideoView(withReactTag reactTag: NSNumber, callback: @escaping (RCTVideo?) -> Void) {
+        #if RCT_NEW_ARCH_ENABLED
+        // For Fabric
+        self.bridge?.uiManager.addUIBlock { (_, viewRegistry) in
+            let view = viewRegistry?[reactTag]
+            guard let videoView = view as? RCTVideo else {
+                RCTLogError("Invalid view returned from registry, expecting RCTVideo, got: \(String(describing: view))")
+                callback(nil)
+                return
+            }
+            callback(videoView)
+        }
+        #else
+        // For old bridge mode
+        self.bridge?.uiManager.addUIBlock { (_, viewRegistry) in
+            let view = viewRegistry?[reactTag]
+            guard let videoView = view as? RCTVideo else {
+                RCTLogError("Invalid view returned from registry, expecting RCTVideo, got: \(String(describing: view))")
+                callback(nil)
+                return
+            }
+            callback(videoView)
+        }
+        #endif
     }
 }

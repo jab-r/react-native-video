@@ -1,6 +1,13 @@
 #import <React/RCTViewManager.h>
+#import <React/RCTBridgeModule.h>
+#import <React/RCTEventEmitter.h>
+#import "VideoModule.h"
 
 @interface RCT_EXTERN_MODULE(RCTVideoManager, RCTViewManager)
+
+// Methods
+RCT_EXTERN_METHOD(seekTo:(nonnull NSNumber *)reactTag time:(nonnull NSNumber *)time)
+RCT_EXTERN_METHOD(setPaused:(nonnull NSNumber *)reactTag paused:(BOOL)paused)
 
 RCT_EXPORT_VIEW_PROPERTY(src, NSDictionary)
 RCT_EXPORT_VIEW_PROPERTY(drm, NSDictionary)

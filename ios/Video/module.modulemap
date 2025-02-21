@@ -1,5 +1,5 @@
 framework module VideoModule {
-  umbrella header "RCTVideo-Bridging-Header.h"
+  umbrella header "VideoModule.h"
   
   export *
   module * { export * }
