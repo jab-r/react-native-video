@@ -4,7 +4,41 @@
 #import <React/RCTFabricComponentsPlugins.h>
 #import "VideoModule.h"
 
-@interface RCT_EXTERN_REMAP_MODULE(RCTVideo, RCTVideoManager, RCTViewManager)
+#import <React/RCTLog.h>
+#import <React/RCTBridge.h>
+#import <React/RCTViewManager.h>
+#import <React/RCTUIManager.h>
+#import "RCTVideo-Swift.h"
+
+@interface RCT_EXTERN_MODULE(VideoLogger, RCTEventEmitter)
+@end
+
+@interface RCT_EXTERN_MODULE(RCTVideoManager, RCTViewManager)
+
+RCT_EXPORT_VIEW_PROPERTY(src, NSDictionary)
+RCT_EXPORT_VIEW_PROPERTY(controls, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(paused, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(muted, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(volume, float)
+RCT_EXPORT_VIEW_PROPERTY(resizeMode, NSString)
+RCT_EXPORT_VIEW_PROPERTY(repeat, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(rate, float)
+
+RCT_EXPORT_VIEW_PROPERTY(onVideoLoad, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onVideoError, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onVideoProgress, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onVideoSeek, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onVideoEnd, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onVideoBuffer, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onPlaybackRateChange, RCTDirectEventBlock)
+
++ (BOOL)requiresMainQueueSetup {
+    return YES;
+}
+
++ (NSString *)moduleName {
+    return @"RCTVideo";
+}
 
 // Methods
 RCT_EXTERN_METHOD(seekTo:(nonnull NSNumber *)reactTag time:(nonnull NSNumber *)time)

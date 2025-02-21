@@ -5,24 +5,30 @@ import React_Fabric
 @objc(RCTVideoManager)
 class RCTVideoManager: RCTViewManager {
     override class func moduleName() -> String! {
+        VideoLogger.info("Module initialized")
         return "RCTVideo"
     }
 
     override class func requiresMainQueueSetup() -> Bool {
+        VideoLogger.debug("Main queue setup required: true")
         return true
     }
     
     override func view() -> UIView! {
+        VideoLogger.debug("Creating video view")
         #if RCT_NEW_ARCH_ENABLED
         let componentView = RCTVideo(frame: .zero)
         componentView.bridge = bridge
+        VideoLogger.debug("Created Fabric video view")
         return componentView
         #else
         guard let eventDispatcher = bridge?.eventDispatcher else {
-            RCTLogError("Failed to get event dispatcher")
+            VideoLogger.error("Failed to get event dispatcher")
             return nil
         }
-        return RCTVideo(eventDispatcher: eventDispatcher)
+        let view = RCTVideo(eventDispatcher: eventDispatcher)
+        VideoLogger.debug("Created legacy video view")
+        return view
         #endif
     }
 
@@ -107,14 +113,22 @@ class RCTVideoManager: RCTViewManager {
     }
 
     private func performOnVideoView(withReactTag reactTag: NSNumber, callback: @escaping (RCTVideo?) -> Void) {
+        VideoLogger.debug("Performing operation on video view", data: ["tag": reactTag])
         #if RCT_NEW_ARCH_ENABLED
         bridge?.uiManager.synchronouslyUpdateViewOnUIThread(reactTag, viewName: "RCTVideo", props: nil)
         if let view = bridge?.uiManager.view(forReactTag: reactTag) as? RCTVideo {
+            VideoLogger.debug("Found Fabric video view, executing callback", data: ["tag": reactTag])
             callback(view)
+        } else {
+            VideoLogger.error("Failed to find Fabric video view", data: ["tag": reactTag])
         }
         #else
         bridge?.uiManager.addUIBlock { (_, viewRegistry) in
-            guard let view = viewRegistry?[reactTag] as? RCTVideo else { return }
+            guard let view = viewRegistry?[reactTag] as? RCTVideo else {
+                VideoLogger.error("Failed to find legacy video view", data: ["tag": reactTag])
+                return
+            }
+            VideoLogger.debug("Found legacy video view, executing callback", data: ["tag": reactTag])
             callback(view)
         }
         #endif

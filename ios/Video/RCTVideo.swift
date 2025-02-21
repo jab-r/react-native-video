@@ -198,6 +198,13 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     }
 
     init(eventDispatcher: RCTEventDispatcher!) {
+        VideoLogger.debug("Video component mounted", [
+            "source": [
+                "isAsset": true,
+                "type": "mp4",
+                "uri": 26
+            ]
+        ])
         _eventDispatcher = eventDispatcher
         super.init(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
         #if USE_GOOGLE_IMA
@@ -537,14 +544,16 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     }
 
     func setupPlayer(playerItem: AVPlayerItem) async throws {
+        RCTLog.info("[VideoModule] Setting up player")
         if !isSetSourceOngoing {
-            DebugLog("setSrc has been canceled last step")
+            RCTLog.info("[VideoModule] Setup cancelled - source set operation no longer ongoing")
             return
         }
 
         _player?.pause()
         _playerItem = playerItem
         _playerObserver.playerItem = _playerItem
+        RCTLog.info("[VideoModule] Player item set")
         setPreferredForwardBufferDuration(_preferredForwardBufferDuration)
         setPlaybackRange(playerItem, withCropStart: _source?.cropStart, withCropEnd: _source?.cropEnd)
         setFilter(_filterName)
@@ -599,15 +608,22 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
         isSetSourceOngoing = false
         applyNextSource()
     }
-
     @objc
     func setSrc(_ source: NSDictionary!) {
+        VideoLogger.debug("Creating Video component", [
+            "hasRef": false,
+            "nativeComponent": true,
+            "props": [
+                "source": source as Any
+            ]
+        ])
         if self.isSetSourceOngoing || self.nextSource != nil {
-            DebugLog("setSrc buffer request")
+            VideoLogger.debug("Source set already in progress, buffering request")
             self._player?.replaceCurrentItem(with: nil)
             nextSource = source
             return
         }
+    self.isSetSourceOngoing = true
         self.isSetSourceOngoing = true
 
         let initializeSource = {
@@ -1495,10 +1511,32 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     }
 
     func handleReadyToPlay() {
-        guard let _playerItem else { return }
-        guard let source = _source else { return }
+        VideoLogger.debug("Video props updated", [
+            "props": [
+                "controls": _controls,
+                "resizeMode": _resizeMode,
+                "source": [
+                    "isAsset": true,
+                    "type": "mp4",
+                    "uri": 26
+                ],
+                "style": [
+                    "height": 275,
+                    "width": 350
+                ]
+            ]
+        ])
+        guard let _playerItem else {
+            VideoLogger.error("No player item available")
+            return
+        }
+        guard let source = _source else {
+            RCTLog.info("[VideoModule] No source available")
+            return
+        }
         Task {
             if self._pendingSeek {
+                RCTLogInfo("[VideoModule] Handling pending seek to time: %f", self._pendingSeekTime)
                 self.setSeek(NSNumber(value: self._pendingSeekTime), NSNumber(value: 100))
                 self._pendingSeek = false
             }
@@ -1563,21 +1601,30 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     }
 
     func handlePlaybackFailed() {
+        RCTLog.error("[VideoModule] Playback failed")
         if let player = _player {
             NowPlayingInfoCenterManager.shared.removePlayer(player: player)
         }
 
-        guard let _playerItem else { return }
+        guard let _playerItem else {
+            RCTLog.error("[VideoModule] No player item available during failure")
+            return
+        }
+        
+        let error = _playerItem.error! as NSError
+        RCTLog.error("[VideoModule] Error details - code: %d, domain: %@, description: %@",
+            error.code,
+            error.domain,
+            error.localizedDescription)
+            
         onVideoError?(
             [
                 "error": [
-                    "code": NSNumber(value: (_playerItem.error! as NSError).code),
-                    "localizedDescription": _playerItem.error?.localizedDescription == nil ? "" : _playerItem.error?.localizedDescription as Any,
-                    "localizedFailureReason": ((_playerItem.error! as NSError).localizedFailureReason == nil ?
-                        "" : (_playerItem.error! as NSError).localizedFailureReason) ?? "",
-                    "localizedRecoverySuggestion": ((_playerItem.error! as NSError).localizedRecoverySuggestion == nil ?
-                        "" : (_playerItem.error! as NSError).localizedRecoverySuggestion) ?? "",
-                    "domain": (_playerItem.error as! NSError).domain,
+                    "code": NSNumber(value: error.code),
+                    "localizedDescription": error.localizedDescription,
+                    "localizedFailureReason": error.localizedFailureReason ?? "",
+                    "localizedRecoverySuggestion": error.localizedRecoverySuggestion ?? "",
+                    "domain": error.domain,
                 ],
                 "target": reactTag as Any,
             ]

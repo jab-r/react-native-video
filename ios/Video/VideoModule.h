@@ -4,6 +4,10 @@
 #import <React/RCTBridge.h>
 #import <React/RCTUIManager.h>
 #import <React/RCTComponent.h>
+#import <React/RCTEventEmitter.h>
+
+// Import our logger
+#import "RCTVideoLogger.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
