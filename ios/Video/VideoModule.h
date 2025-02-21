@@ -6,10 +6,14 @@
 #import <React/RCTComponent.h>
 #import <React/RCTEventEmitter.h>
 
-// Import our logger
-#import "RCTVideoLogger.h"
-
 NS_ASSUME_NONNULL_BEGIN
+
+// Export the logger
+@interface VideoLogger : RCTEventEmitter
++ (void)debug:(NSString *)message data:(NSDictionary *)data;
++ (void)info:(NSString *)message data:(NSDictionary *)data;
++ (void)error:(NSString *)message data:(NSDictionary *)data;
+@end
 
 // Forward declarations
 @class RCTVideo;

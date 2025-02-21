@@ -1,33 +1,41 @@
 import AVFoundation
 import React
 import React_Fabric
+import VideoModule
 
 @objc(RCTVideoManager)
 class RCTVideoManager: RCTViewManager {
+    private var logger: VideoLogger!
+    
     override class func moduleName() -> String! {
-        VideoLogger.info("Module initialized")
         return "RCTVideo"
     }
 
     override class func requiresMainQueueSetup() -> Bool {
-        VideoLogger.debug("Main queue setup required: true")
         return true
     }
     
+    override init() {
+        super.init()
+        logger = VideoLogger.shared
+        logger.info("Module initialized")
+        logger.debug("Main queue setup required: true")
+    }
+    
     override func view() -> UIView! {
-        VideoLogger.debug("Creating video view")
+        logger.debug("Creating video view")
         #if RCT_NEW_ARCH_ENABLED
         let componentView = RCTVideo(frame: .zero)
         componentView.bridge = bridge
-        VideoLogger.debug("Created Fabric video view")
+        logger.debug("Created Fabric video view")
         return componentView
         #else
         guard let eventDispatcher = bridge?.eventDispatcher else {
-            VideoLogger.error("Failed to get event dispatcher")
+            logger.error("Failed to get event dispatcher")
             return nil
         }
         let view = RCTVideo(eventDispatcher: eventDispatcher)
-        VideoLogger.debug("Created legacy video view")
+        logger.debug("Created legacy video view")
         return view
         #endif
     }
@@ -113,22 +121,22 @@ class RCTVideoManager: RCTViewManager {
     }
 
     private func performOnVideoView(withReactTag reactTag: NSNumber, callback: @escaping (RCTVideo?) -> Void) {
-        VideoLogger.debug("Performing operation on video view", data: ["tag": reactTag])
+        logger.debug("Performing operation on video view", data: ["tag": reactTag])
         #if RCT_NEW_ARCH_ENABLED
         bridge?.uiManager.synchronouslyUpdateViewOnUIThread(reactTag, viewName: "RCTVideo", props: nil)
         if let view = bridge?.uiManager.view(forReactTag: reactTag) as? RCTVideo {
-            VideoLogger.debug("Found Fabric video view, executing callback", data: ["tag": reactTag])
+            logger.debug("Found Fabric video view, executing callback", data: ["tag": reactTag])
             callback(view)
         } else {
-            VideoLogger.error("Failed to find Fabric video view", data: ["tag": reactTag])
+            logger.error("Failed to find Fabric video view", data: ["tag": reactTag])
         }
         #else
         bridge?.uiManager.addUIBlock { (_, viewRegistry) in
             guard let view = viewRegistry?[reactTag] as? RCTVideo else {
-                VideoLogger.error("Failed to find legacy video view", data: ["tag": reactTag])
+                logger.error("Failed to find legacy video view", data: ["tag": reactTag])
                 return
             }
-            VideoLogger.debug("Found legacy video view, executing callback", data: ["tag": reactTag])
+            logger.debug("Found legacy video view, executing callback", data: ["tag": reactTag])
             callback(view)
         }
         #endif

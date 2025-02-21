@@ -1,16 +1,66 @@
 import Foundation
+import React
 
-@objcMembers
-class VideoLogger: NSObject {
-    @objc static func debug(_ message: String, data: [String: Any]? = nil) {
-        RCTVideoLogger.emitLogEvent("debug", message: message, data: data as NSDictionary?)
+@objc(VideoLogger)
+class VideoLogger: RCTEventEmitter {
+    static var shared: VideoLogger!
+    
+    private var hasListeners = false
+    private var queuedLogs: [[String: Any]] = []
+    
+    override init() {
+        super.init()
+        VideoLogger._shared = self
     }
     
-    @objc static func info(_ message: String, data: [String: Any]? = nil) {
-        RCTVideoLogger.emitLogEvent("info", message: message, data: data as NSDictionary?)
+    override class func moduleName() -> String! {
+        return "VideoLogger"
     }
     
-    @objc static func error(_ message: String, data: [String: Any]? = nil) {
-        RCTVideoLogger.emitLogEvent("error", message: message, data: data as NSDictionary?)
+    override static func requiresMainQueueSetup() -> Bool {
+        return true
+    }
+    
+    override func supportedEvents() -> [String]! {
+        return ["VideoModuleLog"]
+    }
+    
+    override func startObserving() {
+        hasListeners = true
+        // Send any queued logs
+        for log in queuedLogs {
+            sendEvent(withName: "VideoModuleLog", body: log)
+        }
+        queuedLogs.removeAll()
+    }
+    
+    override func stopObserving() {
+        hasListeners = false
+    }
+    
+    private func queueOrSendLog(level: String, message: String, data: [String: Any]?) {
+        let log: [String: Any] = [
+            "level": level,
+            "message": message,
+            "data": data as Any
+        ]
+        
+        if hasListeners {
+            sendEvent(withName: "VideoModuleLog", body: log)
+        } else {
+            queuedLogs.append(log)
+        }
+    }
+    
+    @objc func debug(_ message: String, data: [String: Any]? = nil) {
+        queueOrSendLog(level: "debug", message: message, data: data)
+    }
+    
+    @objc func info(_ message: String, data: [String: Any]? = nil) {
+        queueOrSendLog(level: "info", message: message, data: data)
+    }
+    
+    @objc func error(_ message: String, data: [String: Any]? = nil) {
+        queueOrSendLog(level: "error", message: message, data: data)
     }
 }

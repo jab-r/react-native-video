@@ -11,6 +11,9 @@
 #import "RCTVideo-Swift.h"
 
 @interface RCT_EXTERN_MODULE(VideoLogger, RCTEventEmitter)
+RCT_EXTERN_METHOD(debug:(NSString *)message data:(NSDictionary *)data)
+RCT_EXTERN_METHOD(info:(NSString *)message data:(NSDictionary *)data)
+RCT_EXTERN_METHOD(error:(NSString *)message data:(NSDictionary *)data)
 @end
 
 @interface RCT_EXTERN_MODULE(RCTVideoManager, RCTViewManager)
